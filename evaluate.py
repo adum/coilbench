@@ -119,36 +119,72 @@ def estimate_solving_times(level_data):
     best_model = min(models, key=lambda x: x[3])
     model_name, params, func, _ = best_model
     
-    # Check if the model gives reasonable predictions
-    test_size = 100 * 100
-    test_prediction = func(test_size, *params)
+    # Add a conservative theoretical model
+    def theoretical_func(n):
+        # Use n^2.5 as a reasonable estimate for a backtracking algorithm
+        return 0.03 * np.power(n, 2.5) / 1000
     
-    # If the prediction is unreasonably large (> 1000 years), use a more conservative model
-    if test_prediction > 31536000000:  # 1000 years in seconds
-        print(f"Warning: {model_name} model gives unreasonably large predictions. Using a more conservative model.")
-        # Use a more conservative polynomial model
-        def conservative_func(n):
-            # Use n^2.5 as a reasonable estimate for a backtracking algorithm
-            return 0.03 * np.power(n, 2.5) / 1000
-        
-        func = conservative_func
-        model_name = "Conservative polynomial"
+    models.append(("Theoretical", None, theoretical_func, float('inf')))  # Add to models with infinite residuals
     
-    # Generate predictions for square levels
+    # Generate predictions for all models
     sizes_to_predict = [n*n for n in [100, 200, 300, 400, 500, 750, 1000, 1500, 2000]]
-    predictions = []
+    all_predictions = {}
     
-    for size in sizes_to_predict:
-        n = int(math.sqrt(size))
-        predicted_time = func(size, *params) if model_name != "Conservative polynomial" else func(size)
-        if predicted_time < 0:  # Sanity check
-            predicted_time = 0
-        human_time = time_to_human_readable(predicted_time)
-        predictions.append(f"{n}x{n}: {human_time}")
+    # Track which models give reasonable predictions
+    reasonable_models = []
+    
+    for model_name, params, func, _ in models:
+        predictions = []
+        is_reasonable = True
+        
+        for size in sizes_to_predict:
+            n = int(math.sqrt(size))
+            
+            if model_name == "Theoretical":
+                predicted_time = func(size)
+            else:
+                # Check if this model gives reasonable predictions for this size
+                try:
+                    # For exponential model, we need to be extra careful with large inputs
+                    if model_name == "Exponential" and size > 200:
+                        # For large sizes, exponential will likely overflow
+                        is_reasonable = False
+                        break
+                    
+                    # Suppress numpy warnings temporarily
+                    with np.errstate(all='ignore'):
+                        predicted_time = func(size, *params)
+                    
+                    if np.isinf(predicted_time) or np.isnan(predicted_time) or predicted_time < 0 or predicted_time > 31536000000000:  # > 1 million years
+                        is_reasonable = False
+                        break
+                except (OverflowError, FloatingPointError, ValueError, RuntimeWarning):
+                    is_reasonable = False
+                    break
+            
+            human_time = time_to_human_readable(predicted_time)
+            predictions.append(f"{n}x{n}: {human_time}")
+        
+        if is_reasonable:
+            all_predictions[model_name] = predictions
+            reasonable_models.append(model_name)
     
     # Format the results
-    result = f"Using {model_name} model to predict solving times for square levels:\n"
-    result += "\n".join(predictions)
+    result = "Note: These estimates have significant variance due to the nature of the puzzle-solving algorithm.\n"
+    result += "Different levels of the same size can take vastly different times to solve depending on their structure.\n"
+    result += "The following estimates should be considered rough approximations and likely optimistic.\n\n"
+    
+    if not reasonable_models:
+        result += "No models produced reasonable predictions. Using theoretical model only:\n"
+        result += "\n".join(all_predictions["Theoretical"])
+    else:
+        # Sort models by complexity (theoretical first, then others)
+        sorted_models = ["Theoretical"] + [m for m in reasonable_models if m != "Theoretical"]
+        
+        for model_name in sorted_models:
+            if model_name in all_predictions:
+                result += f"\nUsing {model_name} model to predict solving times for square levels:\n"
+                result += "\n".join(all_predictions[model_name])
     
     return result
 

@@ -57,7 +57,7 @@ Where:
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
 - `--timeout T` (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
-- `--estimate` (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data
+- `--estimate` (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data, showing predictions from multiple models
 
 Example:
 ```
