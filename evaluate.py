@@ -44,17 +44,20 @@ def estimate_solving_times(level_data):
     
     # Check if all times are very similar
     if np.max(times) - np.min(times) < 0.1:
-        print("Warning: All solving times are very similar. Using theoretical complexity for estimation.")
-        # For brute force backtracking, complexity is typically exponential
-        # Let's use a reasonable estimate based on the problem domain
+        print("Warning: All solving times are very similar. Using calibrated theoretical complexity for estimation.")
         
-        # For a Coil puzzle with n cells, the brute force complexity is roughly O(4^n)
-        # But our solver is smarter than pure brute force, so let's use a more reasonable estimate
-        # Let's use a polynomial model with a higher exponent to represent the complexity
+        # Calculate a scaling factor based on the actual timing data
+        # Use the average time and size to calibrate the model
+        avg_time = np.mean(times)
+        avg_size = np.mean(sizes)
+        
+        # For a Coil puzzle, we'll use a polynomial model with exponent 2.5
+        # This is between quadratic and cubic complexity, which is reasonable for this type of puzzle
+        # Calibrate the coefficient based on the actual timing data
+        coefficient = avg_time / (np.power(avg_size, 2.5) / 1000)
+        
         def theoretical_func(n):
-            # Use n^2.5 as a reasonable estimate for a backtracking algorithm
-            # This is between quadratic and cubic complexity
-            return 0.03 * np.power(n, 2.5) / 1000
+            return coefficient * np.power(n, 2.5) / 1000
         
         # Generate predictions for square levels
         sizes_to_predict = [n*n for n in [100, 200, 300, 400, 500, 750, 1000, 1500, 2000]]
@@ -119,10 +122,19 @@ def estimate_solving_times(level_data):
     best_model = min(models, key=lambda x: x[3])
     model_name, params, func, _ = best_model
     
-    # Add a conservative theoretical model
+    # Add a calibrated theoretical model
+    # Calculate a scaling factor based on the actual timing data
+    # Use the average time and size to calibrate the model
+    avg_time = np.mean(times)
+    avg_size = np.mean(sizes)
+    
+    # For a Coil puzzle, we'll use a polynomial model with exponent 2.5
+    # This is between quadratic and cubic complexity, which is reasonable for this type of puzzle
+    # Calibrate the coefficient based on the actual timing data
+    coefficient = avg_time / (np.power(avg_size, 2.5) / 1000)
+    
     def theoretical_func(n):
-        # Use n^2.5 as a reasonable estimate for a backtracking algorithm
-        return 0.03 * np.power(n, 2.5) / 1000
+        return coefficient * np.power(n, 2.5) / 1000
     
     models.append(("Theoretical", None, theoretical_func, float('inf')))  # Add to models with infinite residuals
     
@@ -200,7 +212,7 @@ def read_level(level_path):
     
     return content, width, height
 
-def validate_solution(level_path, solution):
+def validate_solution(level_path, solution, debug=False):
     """Validate a solution using the check.c program."""
     # Create a temporary file for the solution
     solution_path = "temp_solution.txt"
@@ -209,8 +221,13 @@ def validate_solution(level_path, solution):
     
     # Run the check program
     try:
+        cmd = ["./coil_check/check"]
+        if debug:
+            cmd.append("-d")
+        cmd.extend([level_path, solution_path])
+        
         result = subprocess.run(
-            ["./coil_check/check", level_path, solution_path],
+            cmd,
             capture_output=True,
             text=True,
             check=False
@@ -235,6 +252,8 @@ def main():
                         help='Maximum time in seconds allowed for solving a level (default: 60)')
     parser.add_argument('--estimate', action='store_true',
                         help='Estimate solving times for larger levels after evaluation')
+    parser.add_argument('--debug', '-d', action='store_true',
+                        help='Enable debug mode for solution validation')
     args = parser.parse_args()
     
     # Get the solver program
@@ -284,11 +303,16 @@ def main():
             # Get the solution
             solution = process.stdout.strip()
             
-            # Validate the solution
-            is_valid, error_msg = validate_solution(level_file, solution)
-            
             # Calculate time taken
             time_taken = time.time() - start_time
+            
+            # Check if the solver couldn't find a solution
+            if solution == "No solution found":
+                print(f"FAIL (No solution found) ({time_taken:.2f}s)")
+                break
+                
+            # Validate the solution
+            is_valid, error_msg = validate_solution(level_file, solution, args.debug)
             
             # Print result
             if is_valid:

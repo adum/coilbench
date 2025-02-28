@@ -49,7 +49,7 @@ The programs read the level on standard in, and return the solution on standard 
 The evaluation script (evaluate.py) can be used as follows:
 
 ```
-./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate]
+./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
 ```
 
 Where:
@@ -57,7 +57,8 @@ Where:
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
 - `--timeout T` (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
-- `--estimate` (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data, showing predictions from multiple models
+- `--estimate` (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data, showing predictions from multiple models calibrated to the actual performance
+- `--debug` or `-d` (optional) enables debug mode for solution validation, showing the board state when a solution fails
 
 Example:
 ```
@@ -90,9 +91,9 @@ Example:
 
 This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
 
-9. Solver
+9. Example Solver
 
-A brute force solver (coil_solver.py) is provided that can find solutions to Coil puzzles:
+### Brute Force Solver (coil_solver.py)
 
 ```
 ./coil_solver.py [level_file]
@@ -101,7 +102,7 @@ A brute force solver (coil_solver.py) is provided that can find solutions to Coi
 Where:
 - `[level_file]` is the path to the level file (optional, reads from stdin if not provided)
 
-The solver uses a backtracking algorithm to try all possible starting positions and movement sequences. It will output the first valid solution it finds in the format specified in section 5.
+The solver uses a simple backtracking algorithm to try all possible starting positions and movement sequences. It will output the first valid solution it finds in the format specified in section 5.
 
 Example:
 ```
@@ -113,14 +114,34 @@ This will output a solution like:
 x=1&y=0&path=RDLDR
 ```
 
-You can use the solver with the evaluation script to test it against all levels:
+10. Debugging
+
+When a solution fails validation, it can be helpful to see what went wrong. The check program supports a debug mode that prints out the board state when a solution fails:
+
 ```
-./evaluate.py ./coil_solver.py
+./coil_check/check -d <board_file> <solution_file>
 ```
 
-10. Victory
+The debug output shows:
+- The current board state with:
+  - `X` for walls
+  - `#` for visited cells
+  - `.` for empty cells
+  - `@` for the current position
+- The current position coordinates
+- Information about what went wrong (e.g., "direction is blocked", "path misses N fields")
+
+You can also enable debug mode in the evaluation script with the `--debug` or `-d` flag:
+
+```
+./evaluate.py ./my_solver --debug
+```
+
+This will show detailed debug information when a solution fails validation.
+
+11. Victory
 
 The top level to solve is approximately 2000 by 2000. A good solver will be able to solve this in under an hour.
 
-Some clevel approaches are needed because the time estimate for the simple solver is:
+Some clever approaches are needed because the time estimate for the simple solver is:
 2000x2000: 304.41 millennia

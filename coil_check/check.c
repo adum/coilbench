@@ -2,35 +2,116 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 typedef unsigned char u1;
 typedef   signed int  s4;
 typedef unsigned int  u4;
 
+// Global variables
+bool debug_mode = false;
+u4 board_w, board_h, w, h;
+u1* board = NULL;
+
+// Function to print the board state for debugging
+void print_board_state(u1* b, u4 w, u4 h, u4 curr_x, u4 curr_y)
+{
+    fprintf(stderr, "\nBoard state (%ux%u):\n", w-2, h-2);
+    fprintf(stderr, "Current position: (%u,%u)\n", curr_x-1, curr_y-1);
+    
+    // Print column numbers
+    fprintf(stderr, "  ");
+    for (u4 x = 1; x < w - 1; ++x)
+    {
+        fprintf(stderr, "%u ", x-1);
+    }
+    fprintf(stderr, "\n");
+    
+    for (u4 y = 1; y < h - 1; ++y)
+    {
+        // Print row number
+        fprintf(stderr, "%u ", y-1);
+        
+        for (u4 x = 1; x < w - 1; ++x)
+        {
+            u1 cell = b[y * w + x];
+            
+            // Highlight current position
+            if (x == curr_x && y == curr_y)
+            {
+                fprintf(stderr, "@ ");
+            }
+            else if (cell == 0)
+            {
+                // Cell is either a wall or has been visited
+                // Check original board to distinguish
+                if (board[y * w + x] == 0)
+                {
+                    fprintf(stderr, "X "); // Wall
+                }
+                else
+                {
+                    fprintf(stderr, "# "); // Visited
+                }
+            }
+            else
+            {
+                fprintf(stderr, ". "); // Empty
+            }
+        }
+        fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "\n");
+}
+
 int main(int const argc, char** const argv)
 {
-	if (argc != 3)
-	{
-		fprintf(stderr,
-			"%s <board filename> <solution filename>\n"
-			"file formats:\n"
-			"  board:    x=<x>&y=<y>&board=<board>\n"
-			"  solution: x=<x>&y=<y>&path=<path>\n"
-			"            x=<x>&y=<y>&qpath=<qpath>\n",
-			argv[0]);
-		return EXIT_FAILURE;
-	}
+    // Parse command line options
+    int opt;
+    while ((opt = getopt(argc, argv, "d")) != -1)
+    {
+        switch (opt)
+        {
+            case 'd':
+                debug_mode = true;
+                break;
+            default:
+                fprintf(stderr,
+                    "Usage: %s [-d] <board filename> <solution filename>\n"
+                    "Options:\n"
+                    "  -d    Enable debug mode\n"
+                    "File formats:\n"
+                    "  board:    x=<x>&y=<y>&board=<board>\n"
+                    "  solution: x=<x>&y=<y>&path=<path>\n"
+                    "            x=<x>&y=<y>&qpath=<qpath>\n",
+                    argv[0]);
+                return EXIT_FAILURE;
+        }
+    }
+    
+    // Check if we have the required arguments
+    if (optind + 2 > argc)
+    {
+        fprintf(stderr,
+            "Usage: %s [-d] <board filename> <solution filename>\n"
+            "Options:\n"
+            "  -d    Enable debug mode\n"
+            "File formats:\n"
+            "  board:    x=<x>&y=<y>&board=<board>\n"
+            "  solution: x=<x>&y=<y>&path=<path>\n"
+            "            x=<x>&y=<y>&qpath=<qpath>\n",
+            argv[0]);
+        return EXIT_FAILURE;
+    }
 
 	// Read board.
-	FILE* const f = fopen(argv[1], "r");
+	FILE* const f = fopen(argv[optind], "r");
 	if (!f)
 	{
 		fprintf(stderr, "failed to open board\n");
 		return EXIT_FAILURE;
 	}
 
-	u4 board_h;
-	u4 board_w;
 	if (fscanf(f, "x=%u&y=%u&board=", &board_w, &board_h) != 2)
 	{
 		fprintf(stderr, "could not parse board size\n");
@@ -39,14 +120,26 @@ int main(int const argc, char** const argv)
 
 	// Add a blocked border.
 	u4        n = 0;
-	u4  const h = board_h + 2;
-	u4  const w = board_w + 2;
+	h = board_h + 2;
+	w = board_w + 2;
 
 	u1* const b = calloc(h * w, sizeof(*b));
 	if (!b)
 	{
 		fprintf(stderr, "out of memory\n");
 		return EXIT_FAILURE;
+	}
+
+	// Create a copy of the original board for debugging
+	if (debug_mode)
+	{
+		board = calloc(h * w, sizeof(*board));
+		if (!board)
+		{
+			fprintf(stderr, "out of memory for debug board\n");
+			free(b);
+			return EXIT_FAILURE;
+		}
 	}
 
 	for (u4 y = 1; y != h - 1; ++y)
@@ -75,12 +168,16 @@ int main(int const argc, char** const argv)
 					return EXIT_FAILURE;
 			}
 			b[y * w + x] = c;
+			if (debug_mode)
+			{
+				board[y * w + x] = c;
+			}
 		}
 	}
 	fclose(f);
 
 	// Check solution.
-	FILE* const g = fopen(argv[2], "r");
+	FILE* const g = fopen(argv[optind + 1], "r");
 	if (!g)
 	{
 		fprintf(stderr, "failed to open solution\n");
@@ -114,6 +211,13 @@ int main(int const argc, char** const argv)
 	if (start_y >= board_h || start_x >= board_w)
 	{
 		fprintf(stderr, "start position not on board\n");
+		if (debug_mode)
+		{
+			fprintf(stderr, "Board dimensions: %ux%u\n", board_w, board_h);
+			fprintf(stderr, "Start position: (%u,%u)\n", start_x, start_y);
+		}
+		free(b);
+		if (debug_mode) free(board);
 		return EXIT_FAILURE;
 	}
 
@@ -124,6 +228,12 @@ int main(int const argc, char** const argv)
 	if (!*i)
 	{
 		fprintf(stderr, "start position is blocked\n");
+		if (debug_mode)
+		{
+			print_board_state(b, w, h, x, y);
+		}
+		free(b);
+		if (debug_mode) free(board);
 		return EXIT_FAILURE;
 	}
 
@@ -161,6 +271,21 @@ int main(int const argc, char** const argv)
 		if (!i[d])
 		{
 			fprintf(stderr, "direction is blocked\n");
+			if (debug_mode)
+			{
+				// Calculate current position
+				u4 curr_x = (i - b) % w;
+				u4 curr_y = (i - b) / w;
+				char dir_char = ' ';
+				if (d == delta[0]) dir_char = 'L';
+				else if (d == delta[1]) dir_char = 'U';
+				else if (d == delta[2]) dir_char = 'R';
+				else if (d == delta[3]) dir_char = 'D';
+				fprintf(stderr, "Attempted direction: %c\n", dir_char);
+				print_board_state(b, w, h, curr_x, curr_y);
+			}
+			free(b);
+			if (debug_mode) free(board);
 			return EXIT_FAILURE;
 		}
 
@@ -195,8 +320,20 @@ end_of_path:
 	if (n != 0)
 	{
 		fprintf(stderr, "path misses %u fields\n", n);
+		if (debug_mode)
+		{
+			// Calculate current position
+			u4 curr_x = (i - b) % w;
+			u4 curr_y = (i - b) / w;
+			print_board_state(b, w, h, curr_x, curr_y);
+			fprintf(stderr, "Remaining unvisited cells: %u\n", n);
+		}
+		free(b);
+		if (debug_mode) free(board);
 		return EXIT_FAILURE;
 	}
 
+	free(b);
+	if (debug_mode) free(board);
 	return EXIT_SUCCESS;
 }
