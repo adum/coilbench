@@ -49,7 +49,7 @@ The programs read the level on standard in, and return the solution on standard 
 The evaluation script (evaluate.py) can be used as follows:
 
 ```
-./evaluate.py <solver_program> [--start N] [--end M] [--timeout T]
+./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate]
 ```
 
 Where:
@@ -57,6 +57,7 @@ Where:
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
 - `--timeout T` (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
+- `--estimate` (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data
 
 Example:
 ```
@@ -116,3 +117,7 @@ You can use the solver with the evaluation script to test it against all levels:
 ```
 ./evaluate.py ./coil_solver.py
 ```
+
+10. Victory
+
+The top level to solve is approximately 2000 by 2000. A good solver will be able to solve this in under an hour.
