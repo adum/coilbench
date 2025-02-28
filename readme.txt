@@ -121,3 +121,6 @@ You can use the solver with the evaluation script to test it against all levels:
 10. Victory
 
 The top level to solve is approximately 2000 by 2000. A good solver will be able to solve this in under an hour.
+
+Some clevel approaches are needed because the time estimate for the simple solver is:
+2000x2000: 304.41 millennia
