@@ -49,6 +49,8 @@ def main():
     parser.add_argument('solver', help='Path to the solver program')
     parser.add_argument('--start', type=int, default=1, help='Starting level number')
     parser.add_argument('--end', type=int, default=None, help='Ending level number')
+    parser.add_argument('--timeout', type=float, default=60, 
+                        help='Maximum time in seconds allowed for solving a level (default: 60)')
     args = parser.parse_args()
     
     # Get the solver program
@@ -89,7 +91,7 @@ def main():
                 input=level_content,
                 capture_output=True,
                 text=True,
-                timeout=60  # 60 second timeout
+                timeout=args.timeout  # Use the timeout parameter
             )
             
             # Get the solution
@@ -115,7 +117,7 @@ def main():
                 
         except subprocess.TimeoutExpired:
             time_taken = time.time() - start_time
-            print(f"TIMEOUT ({time_taken:.2f}s)")
+            print(f"TIMEOUT - Exceeded {args.timeout}s limit ({time_taken:.2f}s)")
             break
         except Exception as e:
             time_taken = time.time() - start_time

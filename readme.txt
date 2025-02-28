@@ -49,13 +49,14 @@ The programs read the level on standard in, and return the solution on standard 
 The evaluation script (evaluate.py) can be used as follows:
 
 ```
-./evaluate.py <solver_program> [--start N] [--end M]
+./evaluate.py <solver_program> [--start N] [--end M] [--timeout T]
 ```
 
 Where:
 - `<solver_program>` is the path to your solver program
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
+- `--timeout T` (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
 
 Example:
 ```
