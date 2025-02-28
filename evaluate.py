@@ -7,9 +7,16 @@ import argparse
 from pathlib import Path
 
 def read_level(level_path):
-    """Read a level file and return its contents."""
+    """Read a level file and return its contents and dimensions."""
     with open(level_path, 'r') as f:
-        return f.read().strip()
+        content = f.read().strip()
+    
+    # Parse dimensions
+    parts = content.split('&')
+    width = int(parts[0].split('=')[1])
+    height = int(parts[1].split('=')[1])
+    
+    return content, width, height
 
 def validate_solution(level_path, solution):
     """Validate a solution using the check.c program."""
@@ -68,9 +75,9 @@ def main():
     # Evaluate each level
     for level_file in level_files:
         level_num = level_file.name
-        level_content = read_level(level_file)
+        level_content, width, height = read_level(level_file)
         
-        print(f"Level {level_num}: ", end="", flush=True)
+        print(f"Level {level_num} ({width}x{height}): ", end="", flush=True)
         
         # Measure time
         start_time = time.time()

@@ -39,3 +39,79 @@ There are multiple solutions, but one is to start at (1, 0), move right, then do
 
 The solution would be then:
 x=1&y=0&path=RDLDR
+
+7. Evaluation
+
+To test a solving program, we run a script that feeds the program with game levels one by one, then evaluates the results. If it passes the level, the evaluation script will proceed on to the next level. After each level we print the time taken and the result.
+
+The programs read the level on standard in, and return the solution on standard out.
+
+The evaluation script (evaluate.py) can be used as follows:
+
+```
+./evaluate.py <solver_program> [--start N] [--end M]
+```
+
+Where:
+- `<solver_program>` is the path to your solver program
+- `--start N` (optional) specifies the starting level number (default: 1)
+- `--end M` (optional) specifies the ending level number
+
+Example:
+```
+./evaluate.py ./my_solver --start 1 --end 3
+```
+
+This will test your solver against levels 1, 2, and 3, and report the results with level dimensions:
+```
+Level 1 (3x3): PASS (0.03s)
+Level 2 (4x3): PASS (0.03s)
+Level 3 (5x3): PASS (0.03s)
+```
+
+8. Visualization
+
+To visualize a level file as a 2D grid, you can use the draw_level.py script:
+
+```
+./draw_level.py <level_file> [--output OUTPUT_FILE]
+```
+
+Where:
+- `<level_file>` is the path to the level file
+- `--output OUTPUT_FILE` (optional) specifies an output file to write to instead of stdout
+
+Example:
+```
+./draw_level.py levels/1
+```
+
+This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
+
+9. Solver
+
+A brute force solver (coil_solver.py) is provided that can find solutions to Coil puzzles:
+
+```
+./coil_solver.py [level_file]
+```
+
+Where:
+- `[level_file]` is the path to the level file (optional, reads from stdin if not provided)
+
+The solver uses a backtracking algorithm to try all possible starting positions and movement sequences. It will output the first valid solution it finds in the format specified in section 5.
+
+Example:
+```
+./coil_solver.py levels/1
+```
+
+This will output a solution like:
+```
+x=1&y=0&path=RDLDR
+```
+
+You can use the solver with the evaluation script to test it against all levels:
+```
+./evaluate.py ./coil_solver.py
+```
