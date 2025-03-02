@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="150" height="150" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="white"/>
+  <g transform="translate(25, 25)">
+    <!-- Grid lines -->
+    <g stroke="#ccc" stroke-width="1">
+      <!-- Horizontal grid lines -->
+      <line x1="0" y1="0" x2="100" y2="0" />
+      <line x1="0" y1="33.33" x2="100" y2="33.33" />
+      <line x1="0" y1="66.66" x2="100" y2="66.66" />
+      <line x1="0" y1="100" x2="100" y2="100" />
+      
+      <!-- Vertical grid lines -->
+      <line x1="0" y1="0" x2="0" y2="100" />
+      <line x1="33.33" y1="0" x2="33.33" y2="100" />
+      <line x1="66.66" y1="0" x2="66.66" y2="100" />
+      <line x1="100" y1="0" x2="100" y2="100" />
+    </g>
+    
+    <!-- Walls -->
+    <rect x="0" y="0" width="33.33" height="33.33" fill="#333" />
+    <rect x="66.66" y="66.66" width="33.33" height="33.33" fill="#333" />
+    
+    <!-- Empty cells are transparent -->
+  </g>
+  <text x="75" y="145" text-anchor="middle" font-family="Arial" font-size="12">Level 1 (3x3)</text>
+</svg>
