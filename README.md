@@ -61,6 +61,12 @@ The solution would be then:
 x=1&y=0&path=RDLDR
 ```
 
+### Solution Visualization
+
+<img src="images/level1_solution.svg" alt="Level 1 Solution" width="150" height="150"/>
+
+The solution path is shown with blue arrows. The green circle (S) marks the starting position at coordinates (1,0), and the red circle (E) marks the ending position. The path follows the sequence: Right, Down, Left, Down, Right (RDLDR), visiting every non-wall cell exactly once.
+
 ## 7. Evaluation
 
 To test a solving program, we run a script that feeds the program with game levels one by one, then evaluates the results. If it passes the level, the evaluation script will proceed on to the next level. After each level we print the time taken and the result.
