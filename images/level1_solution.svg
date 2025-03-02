@@ -62,5 +62,5 @@
     <circle cx="50" cy="83.33" r="6" fill="#F44336" stroke="#D32F2F" stroke-width="2" />
     <text x="50" y="83.33" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="10" font-weight="bold" fill="white">E</text>
   </g>
-  <text x="75" y="145" text-anchor="middle" font-family="Arial" font-size="12">Level 1 (3x3) Solution: x=1&y=0&path=RDLDR</text>
+  <text x="75" y="145" text-anchor="middle" font-family="Arial" font-size="12">Level 1 (3x3) Solution: x=1&amp;y=0&amp;path=RDLDR</text>
 </svg>
