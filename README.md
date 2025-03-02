@@ -2,6 +2,12 @@
 
 Coil is a pathfinding puzzle game, where the objective is to traverse a grid-based maze while ensuring every tile is visited exactly once. The player starts at a designated position and must navigate using four-directional movement (up, down, left, right).
 
+## Example Levels
+
+<img src="images/level1.svg" alt="Level 1" width="150" height="150"/>
+<img src="images/level10.svg" alt="Level 10" width="180" height="180"/>
+<img src="images/level50.svg" alt="Level 50" width="400" height="380"/>
+
 ## 1. Input Format
 A game level consists of a rectangular grid of dimensions x×y (width × height). Each cell is either empty or a wall.
 
@@ -30,6 +36,8 @@ X . .
 . . .
 . . X
 ```
+
+This is visualized in Level 1 above.
 
 ## 5. Solution format
 Looks like:
@@ -103,6 +111,8 @@ Example:
 ```
 
 This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
+
+The SVG visualizations above were generated from levels 1, 10, and 50, showing the increasing complexity of puzzles. Dark squares represent walls while empty cells are shown in white.
 
 ## 9. Example Solver
 
