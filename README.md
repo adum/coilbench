@@ -170,7 +170,11 @@ This will show detailed debug information when a solution fails validation.
 
 ## 11. Victory
 
-The top level to solve is approximately 2000 by 2000. A good solver will be able to solve this in under an hour.
+The top level to solve is 2000 by 2000. A good solver will be able to solve this in under an hour.
 
 Some clever approaches are needed because the time estimate for the simple solver is:
 2000x2000: 304.41 millennia
+
+## 12. Full board collection
+
+The first 100 levels, which are relatively small, are checked in to the repo under the `levels` directory. For the full collection of 1208 levels, download the zip from Releases.
