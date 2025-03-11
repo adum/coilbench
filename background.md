@@ -15,3 +15,7 @@ A lot of existing coding benchmarks look at small discrete tasks, and a score is
 - Decades of human testing have shown that there are at a minimum dozens of interesting optimization approaches that can be creatively applied in concert, not a single trick to discover
 
 If we give a coding AI a prompt like "iterate on this challenge until you have fully solved the last level" are they able to do it? How far can they get?
+
+# Benchmark leakage
+
+One possible concern with this benchmark is that if solutions are generated, then put publicly online, they may become part of future LLM training sets. This doesn't appear to have happened yet but may in the future. In such a case, it would be relatively straightforward to create a series of similar challengs, some of which could be in the public domain and some may be held back.
