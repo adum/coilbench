@@ -2,7 +2,7 @@
 This puzzle format was originally created by a mathematician by the name of Erich Friedman, manually constructing puzzles and intending people to solve it by hand.
 
 # Computerization
-In 2007, a computerized version was created for the site hacker.org as a way to test the ability for people to write programs to solve it -- querying and submitting via API. To push the boundaries of the solving algorithms, large problem boards were created with a program, up to 2000x2000, much larger than can be solved with a naive brute force algorithm.
+In 2007, a computerized version was created for the site hacker.org (https://www.hacker.org/coil/) as a way to test the ability for people to write programs to solve it -- querying and submitting via API. To push the boundaries of the solving algorithms, large problem boards were created with a program, up to 2000x2000, much larger than can be solved with a naive brute force algorithm.
 
 Over the years, over a thousand people have tried their hand at creating programs to solve this puzzle. Only 4 solvers have made it to the end.
 
