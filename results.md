@@ -4,12 +4,15 @@ The estimate column is a very rough projection of how long this solver would tak
 
 Calling a model "iter" means repeatedly iterating on the solution inside Claude Code or cline, having the model write code, test, repeat, as many times as it wants to. The score value is the highest tested score during this process, even if there are regressions later.
 
-| Date        | Model         | Timeout  | Score    | Estimate for 2000 |
-| --------    | --------      | -------- | -------- | -------- |
-| Feb 27 2025 | (brute force) | 600       | 47       | 104 M |
-| Feb 27 2025 | 01 pro 1shot  | 60       | 0        |  |
-| Feb 27 2025 | 03 mini 1shot | 600       | 63        | 658 M |
-| Feb 27 2025 | Sonnet 3.7 1shot | 600       |  63       | 696 M |
-| Feb 28 2025 | Grok 3.7 1shot | 600       |  47       | 108 M |
-| Feb 28 2025 | 03 mini iter | 600       |    47     |  |
-| Feb 28 2025 | Sonnet 3.7 iter | 600       | 14        | 121 M |
+Calling with "-p" means doing the non interactive mode with Claude Code.
+
+| Date        | Model         | Timeout  | Score    | Estimate for 2000 | Percent of goal |
+| --------    | --------      | -------- | -------- | -------- |  -------- |
+| Feb 27 2025 | (brute force) | 600       | 47       | 104 M |  |
+| Feb 27 2025 | 01 pro 1shot  | 60       | 0        |  |  |
+| Feb 27 2025 | 03 mini 1shot | 600       | 63        | 658 M |  |
+| Feb 27 2025 | Sonnet 3.7 1shot | 600       |  63       | 696 M |  |
+| Feb 28 2025 | Grok 3.7 1shot | 600       |  47       | 108 M |  |
+| Feb 28 2025 | 03 mini iter | 600       |    47     |  |  |
+| Feb 28 2025 | Sonnet 3.7 iter | 600       | 14        | 121 M |  |
+| May 22 2025 | Opus 4 -p | 600       | 14        | | 0.0014% |
