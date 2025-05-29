@@ -15,4 +15,4 @@ Calling with "-p" means doing the non interactive mode with Claude Code.
 | Feb 28 2025 | Grok 3.7 1shot | 600       |  47       | 108 M |  |
 | Feb 28 2025 | 03 mini iter | 600       |    47     |  |  |
 | Feb 28 2025 | Sonnet 3.7 iter | 600       | 14        | 121 M |  |
-| May 22 2025 | Opus 4 -p | 600       | 14        | | 0.0014% |
+| May 29 2025 | Opus 4 -p | 600       | 64        | | 0.014% |
