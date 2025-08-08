@@ -1,0 +1,262 @@
+I'm going to share details about the challenge and provide a sample. And then your job is to write an efficient solver that can solve large board sizes quickly. You will need to be very clever and use the best algorithms you can think of. Make sure this can solve the largest board sizes in reasonable time.
+
+Coil is a pathfinding puzzle game, where the objective is to traverse a grid-based maze while ensuring every tile is visited exactly once. The player starts at a designated position and must navigate using four-directional movement (up, down, left, right).
+
+
+1. Input Format
+A game level consists of a rectangular grid of dimensions x×y (width × height). Each cell is either empty or a wall.
+
+2. Objective
+The goal of the game is to visit every non-wall cell.
+
+3. Rules
+You may pick any starting point that isn't a wall. Then you can move in any orthogonal direction: up, down, left, or right. When you start moving, you continue until you hit a wall, the edge of the board, or a previously visited square. At this point you pick a new direction, if you are not at a dead end. If every empty square has been visited, you win.
+
+4. Format
+The input format looks like this:
+x=<x dimension>&y=<y dimension>&board=<series of characters representing the board>
+
+The characters are a '.' for empty, and a 'X' for a wall. This starts in the upper left and progresses across the first row, then the second, etc.
+
+An example of a 3x3 board:
+x=3&y=3&board=X.......X
+
+Which represents:
+X . .
+. . .
+. . X
+
+5. Solution format
+Looks like:
+x=<x>&y=<y>&path=<path>
+
+x and y are the coordinates of the starting point.
+Path is a series of characters between U for up, D for down, L for left, and R for right.
+
+6. Example
+For this board:
+x=3&y=3&board=X.......X
+
+There are multiple solutions, but one is to start at (1, 0), move right, then down, then left, then down, then right.
+
+The solution would be then:
+x=1&y=0&path=RDLDR
+
+7. Evaluation
+
+To test a solving program, we run a script that feeds the program with game levels one by one, then evaluates the results. If it passes the level, the evaluation script will proceed on to the next level. After each level we print the time taken and the result.
+
+The programs read the level on standard in, and return the solution on standard out.
+
+The evaluation script (evaluate.py) can be used as follows:
+
+./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate]
+
+
+Where:
+- <solver_program> is the path to your solver program
+- --start N (optional) specifies the starting level number (default: 1)
+- --end M (optional) specifies the ending level number
+- --timeout T (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
+- --estimate (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data, showing predictions from multiple models
+
+Example:
+./evaluate.py ./my_solver --start 1 --end 3
+
+
+This will test your solver against levels 1, 2, and 3, and report the results with level dimensions:
+Level 1 (3x3): PASS (0.03s)
+Level 2 (4x3): PASS (0.03s)
+Level 3 (5x3): PASS (0.03s)
+
+
+8. Visualization
+
+To visualize a level file as a 2D grid, you can use the draw_level.py script:
+
+./draw_level.py <level_file> [--output OUTPUT_FILE]
+
+
+Where:
+- <level_file> is the path to the level file
+- --output OUTPUT_FILE (optional) specifies an output file to write to instead of stdout
+
+Example:
+./draw_level.py levels/1
+
+
+This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
+
+9. Example Solver
+
+### Brute Force Solver (coil_solver.py)
+
+./coil_solver.py [level_file]
+
+
+Where:
+- [level_file] is the path to the level file (optional, reads from stdin if not provided)
+
+The solver uses a simple backtracking algorithm to try all possible starting positions and movement sequences. It will output the first valid solution it finds in the format specified in section 5.
+
+Example:
+./coil_solver.py levels/1
+
+
+This will output a solution like:
+x=1&y=0&path=RDLDR
+
+
+10. Victory
+
+The top level to solve is approximately 2000 by 2000. A good solver will be able to solve this in under an hour.
+
+Some clevel approaches are needed because the time estimate for the simple solver is:
+2000x2000: 304.41 millennia
+
+Sample solver:
+#!/usr/bin/env python3
+import sys
+import argparse
+from collections import deque
+
+# Direction vectors: Up, Right, Down, Left
+DIRECTIONS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+DIRECTION_CHARS = ['U', 'R', 'D', 'L']
+
+def parse_level(level_str):
+    """Parse a level string into width, height, and board."""
+    parts = level_str.split('&')
+    width = int(parts[0].split('=')[1])
+    height = int(parts[1].split('=')[1])
+    board_str = parts[2].split('=')[1]
+    
+    # Convert board string to 2D grid
+    board = []
+    for y in range(height):
+        row = []
+        for x in range(width):
+            idx = y * width + x
+            row.append(board_str[idx] == '.')  # True for empty, False for wall
+        board.append(row)
+    
+    return width, height, board
+
+def count_empty_cells(board):
+    """Count the number of empty cells in the board."""
+    return sum(sum(row) for row in board)
+
+def is_valid_move(board, visited, y, x):
+    """Check if a move to (y, x) is valid."""
+    height, width = len(board), len(board[0])
+    return (0 <= y < height and 0 <= x < width and 
+            board[y][x] and not visited[y][x])
+
+def move_until_blocked(board, visited, y, x, dy, dx):
+    """Move in direction (dy, dx) until blocked, marking visited cells."""
+    height, width = len(board), len(board[0])
+    path = []
+    
+    while True:
+        y += dy
+        x += dx
+        
+        if not (0 <= y < height and 0 <= x < width) or not board[y][x] or visited[y][x]:
+            # Hit a wall, edge, or visited cell - move back one step
+            y -= dy
+            x -= dx
+            break
+        
+        visited[y][x] = True
+        path.append((y, x))
+    
+    return y, x, path
+
+def solve_board(board, start_y, start_x):
+    """Solve the board using brute force search starting from (start_y, start_x)."""
+    height, width = len(board), len(board[0])
+    total_empty = count_empty_cells(board)
+    
+    # Check if starting position is valid
+    if not board[start_y][start_x]:
+        return None
+    
+    # Initialize visited grid
+    visited = [[False for _ in range(width)] for _ in range(height)]
+    visited[start_y][start_x] = True
+    
+    # Initialize path
+    path_chars = []
+    visited_count = 1  # Count the starting cell
+    
+    def backtrack(y, x):
+        nonlocal visited_count
+        
+        # If all empty cells are visited, we've found a solution
+        if visited_count == total_empty:
+            return True
+        
+        # Try each direction
+        for i, (dy, dx) in enumerate(DIRECTIONS):
+            # Check if we can move in this direction
+            ny, nx = y + dy, x + dx
+            if is_valid_move(board, visited, ny, nx):
+                # Move until blocked
+                end_y, end_x, path_cells = move_until_blocked(board, visited, y, x, dy, dx)
+                
+                # Add to visited count and path
+                visited_count += len(path_cells)
+                path_chars.append(DIRECTION_CHARS[i])
+                
+                # Recursively try to solve from the new position
+                if backtrack(end_y, end_x):
+                    return True
+                
+                # Backtrack: remove from path and mark cells as unvisited
+                path_chars.pop()
+                for cy, cx in path_cells:
+                    visited[cy][cx] = False
+                visited_count -= len(path_cells)
+        
+        return False
+    
+    # Start the backtracking search
+    if backtrack(start_y, start_x):
+        return f"x={start_x}&y={start_y}&path={''.join(path_chars)}"
+    else:
+        return None
+
+def solve_level(width, height, board):
+    """Try all possible starting positions to solve the level."""
+    for y in range(height):
+        for x in range(width):
+            if board[y][x]:  # If it's an empty cell
+                solution = solve_board(board, y, x)
+                if solution:
+                    return solution
+    
+    return "No solution found"
+
+def main():
+    parser = argparse.ArgumentParser(description='Solve a Coil puzzle using brute force search.')
+    parser.add_argument('level_file', nargs='?', help='Path to the level file (optional, reads from stdin if not provided)')
+    args = parser.parse_args()
+    
+    # Read the level from file or stdin
+    if args.level_file:
+        with open(args.level_file, 'r') as f:
+            level_str = f.read().strip()
+    else:
+        level_str = sys.stdin.read().strip()
+    
+    # Parse the level
+    width, height, board = parse_level(level_str)
+    
+    # Solve the level
+    solution = solve_level(width, height, board)
+    
+    # Print the solution
+    print(solution)
+
+if __name__ == "__main__":
+    main()
