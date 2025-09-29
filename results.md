@@ -19,3 +19,4 @@ Calling with "-p" means doing the non interactive mode with Claude Code.
 | August 8 2025 | Gpt 5 iter | 600       | 47        | | 0.00855% |   33,300,081 |
 | Sept 8 2025 | Gemini 2.5 iter | 600       | 47        | | 0.00855% |   2,631,467 |
 | Sept 20 2025 | Gpt 5 codex iter | 600       | 73        | | 0.018% |  1,917,613  |
+| Sept 29 2025 | Sonnet 4.5 iter | 600       | 47        | | 0.00855% |   |
