@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coil – Play</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: #0f1731;
+        --text: #eaf0ff;
+        --muted: #a8b4d6;
+        --grid-bg: #0a1127;
+        --wall: #2b3766;
+        --cell: #101a38;
+        --visited: #2a4bff22;
+        --current: #58d3ff;
+        --start: #35d07f;
+        --stop: #cdd7ff;
+        --bad: #ff6b6b;
+        --good: #46e38b;
+        --focus: #8aa6ff;
+        --path: #79a6ff;
+        --cell-size: 34px;
+        --cell-gap: 2px;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+        background: radial-gradient(1000px 600px at 20% 0%, #1a2b7a33, transparent 60%),
+          radial-gradient(900px 600px at 90% 20%, #34d39922, transparent 60%), var(--bg);
+        color: var(--text);
+      }
+
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 22px 18px 28px;
+      }
+
+      header {
+        display: flex;
+        gap: 14px;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+
+      .sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      @media (min-width: 880px) {
+        .row {
+          grid-template-columns: 2.1fr 1fr;
+          align-items: start;
+        }
+      }
+
+      .panel {
+        background: linear-gradient(180deg, #111a38, #0d1530);
+        border: 1px solid #23315c;
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 16px 40px #00000040;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .controls .full {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      select,
+      button,
+      input[type="text"] {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #2a3a70;
+        background: #0c1430;
+        color: var(--text);
+        padding: 9px 10px;
+        font-size: 14px;
+        outline: none;
+      }
+
+      select:focus,
+      button:focus,
+      input[type="text"]:focus {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 3px #8aa6ff2a;
+      }
+
+      button {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      button.primary {
+        background: linear-gradient(180deg, #1f3cff, #1225a8);
+        border-color: #3556ff;
+      }
+
+      button.ghost {
+        background: transparent;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .status {
+        margin-top: 10px;
+        padding: 10px 10px;
+        border-radius: 10px;
+        border: 1px solid #23315c;
+        background: #0b1330;
+        font-size: 13px;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+
+      .status.good {
+        border-color: #2b8a5b;
+        background: #0b2b1d;
+        color: #aaf7c8;
+      }
+
+      .status.bad {
+        border-color: #804050;
+        background: #2b0b12;
+        color: #ffd1d1;
+      }
+
+      .hint {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .board-wrap {
+        display: grid;
+        gap: 12px;
+      }
+
+      .board-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .meta {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .board {
+        position: relative;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid #23315c;
+        background: linear-gradient(180deg, #0a1127, #090f22);
+        overflow: auto;
+        max-height: min(72vh, 760px);
+      }
+
+      .grid {
+        display: grid;
+        grid-auto-rows: var(--cell-size);
+        gap: var(--cell-gap);
+        position: relative;
+        z-index: 1;
+      }
+
+      .path-layer {
+        position: absolute;
+        z-index: 2;
+        pointer-events: none;
+        overflow: visible;
+      }
+
+      .cell {
+        width: var(--cell-size);
+        height: var(--cell-size);
+        border-radius: 10px;
+        background: var(--cell);
+        border: 1px solid #1f2a53;
+        display: grid;
+        place-items: center;
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .cell.wall {
+        cursor: not-allowed;
+        background: repeating-linear-gradient(
+            45deg,
+            #2b3766,
+            #2b3766 7px,
+            #24305c 7px,
+            #24305c 14px
+          ),
+          radial-gradient(110px 80px at 25% 20%, #ffffff12, transparent 60%), var(--wall);
+        border-color: #4b5aa3;
+      }
+
+      .cell.empty:hover {
+        border-color: #425aa8;
+      }
+
+      .cell.visited {
+        background: linear-gradient(180deg, #12225c, #0e193f);
+        border-color: #2a3a70;
+      }
+
+      .cell.visited::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        background: var(--visited);
+        pointer-events: none;
+      }
+
+      .small {
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h1>Coil – Interactive Player</h1>
+          <div class="sub">
+            Pick a start cell, then move until blocked (arrows or clicks). Visit every non-wall cell
+            exactly once.
+          </div>
+        </div>
+        <div class="small">Levels 1–20 are embedded (no network needed).</div>
+      </header>
+
+      <div class="row">
+        <section class="panel board-wrap" aria-label="Board">
+          <div class="board-header">
+            <div class="meta" id="levelMeta">Level –</div>
+            <div class="meta" id="progressMeta">–</div>
+          </div>
+          <div class="board" id="board" aria-label="Coil board"></div>
+        </section>
+
+        <aside class="panel" aria-label="Controls">
+          <div class="controls">
+            <div class="full">
+              <label for="levelSelect">Level</label>
+              <select id="levelSelect"></select>
+            </div>
+
+            <div>
+              <label for="resetBtn">Level State</label>
+              <button id="resetBtn" class="ghost" type="button">Reset</button>
+            </div>
+            <div>
+              <label for="undoBtn">Undo</label>
+              <button id="undoBtn" class="ghost" type="button" disabled>Undo (Backspace)</button>
+            </div>
+
+            <div>
+              <label for="upBtn">Move</label>
+              <button id="upBtn" class="primary" type="button">Up</button>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="downBtn" class="primary" type="button">Down</button>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="leftBtn" class="primary" type="button">Left</button>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="rightBtn" class="primary" type="button">Right</button>
+            </div>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+
+          <div class="hint">
+            - Click an empty cell to set the start (click it again to clear before moving).<br />
+            - Click a cell in the same row/column as the current position to move that direction.<br />
+            - Click the current cell to undo one move, or click a past stop (small dot) to undo to
+            it.
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      const LEVEL_STRINGS = {
+        1: "x=3&y=3&board=X.......X",
+        2: "x=4&y=3&board=X..........X",
+        3: "x=5&y=3&board=......X......X.",
+        4: "x=4&y=4&board=..........X.X...",
+        5: "x=5&y=4&board=........X..........X",
+        6: "x=6&y=4&board=...X...X........X...X...",
+        7: "x=5&y=5&board=X......XX................",
+        8: "x=6&y=5&board=.....X.....X..X.......X.......",
+        9: "x=7&y=5&board=...................X....X..........",
+        10: "x=6&y=6&board=...X...X.X............X..X..X.......",
+        11: "x=7&y=6&board=.................XX..X..XX.....X......X...",
+        12: "x=8&y=6&board=............X..............X.........X....X..XXX",
+        13: "x=7&y=7&board=.............X....X...XX.......X.......XX...X....",
+        14: "x=8&y=7&board=..............X............X...X.X.....X....X..X..X....X",
+        15: "x=9&y=7&board=..........X........X...X....X.....XX.X..X..XX.X................",
+        16: "x=8&y=8&board=...........XX......X......XX......XX......XX......X.......X.....",
+        17: "x=9&y=8&board=..........X.....X..X...X....X........X....XX..X.XX.....X................",
+        18: "x=10&y=8&board=XXX.......X...X.....X.........X....XX...X....X....X......X....X.................",
+        19: "x=9&y=9&board=.......................XX...X........X..X.XX..XX.X.X...X......X...X..............",
+        20: "x=10&y=9&board=...X.........X....X...X...X.X.....X........X...X.X...X.....X.........X.........X.........X",
+      };
+
+      function parseLevel(levelString) {
+        const params = new URLSearchParams(levelString);
+        const width = Number(params.get("x"));
+        const height = Number(params.get("y"));
+        const board = params.get("board") ?? "";
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+          throw new Error("Invalid level dimensions");
+        }
+        if (board.length !== width * height) {
+          throw new Error(`Invalid board length (expected ${width * height}, got ${board.length})`);
+        }
+
+        const walls = new Uint8Array(width * height);
+        let openCount = 0;
+        for (let i = 0; i < board.length; i++) {
+          const ch = board[i];
+          if (ch === "X") {
+            walls[i] = 1;
+          } else if (ch === ".") {
+            openCount++;
+          } else {
+            throw new Error(`Invalid board character: ${ch}`);
+          }
+        }
+
+        return { width, height, walls, openCount };
+      }
+
+      function idxOf(width, x, y) {
+        return y * width + x;
+      }
+
+      function xyOf(width, index) {
+        return { x: index % width, y: Math.floor(index / width) };
+      }
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      const ui = {
+        levelSelect: document.getElementById("levelSelect"),
+        levelMeta: document.getElementById("levelMeta"),
+        progressMeta: document.getElementById("progressMeta"),
+        board: document.getElementById("board"),
+        grid: null,
+        pathSvg: null,
+        pathPath: null,
+        status: document.getElementById("status"),
+        resetBtn: document.getElementById("resetBtn"),
+        undoBtn: document.getElementById("undoBtn"),
+        upBtn: document.getElementById("upBtn"),
+        downBtn: document.getElementById("downBtn"),
+        leftBtn: document.getElementById("leftBtn"),
+        rightBtn: document.getElementById("rightBtn"),
+      };
+
+      const DIRS = {
+        U: { dx: 0, dy: -1 },
+        D: { dx: 0, dy: 1 },
+        L: { dx: -1, dy: 0 },
+        R: { dx: 1, dy: 0 },
+      };
+
+      let levelNumber = 1;
+      let level = null;
+      let visited = null; // Uint8Array
+      let visitedCount = 0;
+      let startIndex = null;
+      let currentIndex = null;
+      let stops = []; // indices at the end of each move; includes start
+      let segments = []; // {dir, cells: number[]}
+      let statusKind = "neutral"; // neutral | good | bad
+      let statusText = "";
+
+      const svgNS = "http://www.w3.org/2000/svg";
+
+      function setStatus(kind, text) {
+        statusKind = kind;
+        statusText = text;
+        ui.status.textContent = text;
+        ui.status.classList.remove("good", "bad");
+        if (kind === "good") ui.status.classList.add("good");
+        if (kind === "bad") ui.status.classList.add("bad");
+      }
+
+      function canMoveFrom(index) {
+        const { width, height, walls } = level;
+        const { x, y } = xyOf(width, index);
+        for (const { dx, dy } of Object.values(DIRS)) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          const ni = idxOf(width, nx, ny);
+          if (walls[ni]) continue;
+          if (visited[ni]) continue;
+          return true;
+        }
+        return false;
+      }
+
+      function computeCellSize() {
+        const max = 640;
+        const padding = 12 * 2;
+        const available = max - padding;
+        const size = Math.floor(Math.min(available / level.width, available / level.height));
+        document.documentElement.style.setProperty("--cell-size", `${clamp(size, 20, 48)}px`);
+        document.documentElement.style.setProperty("--cell-gap", level.width * level.height <= 100 ? "2px" : "1px");
+      }
+
+      function updateMeta() {
+        ui.levelMeta.textContent = `Level ${levelNumber} (${level.width}×${level.height})`;
+        const open = level.openCount;
+        const v = startIndex == null ? 0 : visitedCount;
+        ui.progressMeta.textContent = `Visited ${v}/${open}`;
+        ui.undoBtn.disabled = segments.length === 0;
+      }
+
+      function pathPointSequence() {
+        if (startIndex == null) return [];
+        const points = [startIndex];
+        for (const seg of segments) {
+          for (const i of seg.cells) points.push(i);
+        }
+        return points;
+      }
+
+      function updatePathOverlay() {
+        if (!ui.pathSvg || !ui.pathPath) return;
+
+        const boardStyle = getComputedStyle(ui.board);
+        const padLeft = Number.parseFloat(boardStyle.paddingLeft) || 0;
+        const padTop = Number.parseFloat(boardStyle.paddingTop) || 0;
+        ui.pathSvg.style.left = `${padLeft}px`;
+        ui.pathSvg.style.top = `${padTop}px`;
+
+        const style = getComputedStyle(document.documentElement);
+        const cellSize = Number.parseFloat(style.getPropertyValue("--cell-size"));
+        const gap = Number.parseFloat(style.getPropertyValue("--cell-gap"));
+
+        ui.pathPath.setAttribute("stroke-width", String(Math.max(3, Math.round(cellSize * 0.18))));
+
+        const gridW = level.width * cellSize + (level.width - 1) * gap;
+        const gridH = level.height * cellSize + (level.height - 1) * gap;
+        ui.pathSvg.setAttribute("viewBox", `0 0 ${gridW} ${gridH}`);
+        ui.pathSvg.setAttribute("width", String(gridW));
+        ui.pathSvg.setAttribute("height", String(gridH));
+
+        const seq = pathPointSequence();
+        if (seq.length <= 1) {
+          ui.pathPath.setAttribute("d", "");
+        } else {
+          const parts = [];
+          for (let k = 0; k < seq.length; k++) {
+            const i = seq[k];
+            const { x, y } = xyOf(level.width, i);
+            const cx = x * (cellSize + gap) + cellSize / 2;
+            const cy = y * (cellSize + gap) + cellSize / 2;
+            parts.push(`${k === 0 ? "M" : "L"}${cx.toFixed(2)},${cy.toFixed(2)}`);
+          }
+          ui.pathPath.setAttribute("d", parts.join(" "));
+        }
+
+        function setCircle(circle, index, r) {
+          if (!circle) return;
+          if (index == null) {
+            circle.setAttribute("display", "none");
+            return;
+          }
+          const { x, y } = xyOf(level.width, index);
+          const cx = x * (cellSize + gap) + cellSize / 2;
+          const cy = y * (cellSize + gap) + cellSize / 2;
+          circle.setAttribute("display", "block");
+          circle.setAttribute("cx", cx.toFixed(2));
+          circle.setAttribute("cy", cy.toFixed(2));
+          circle.setAttribute("r", String(r));
+        }
+
+        const dotR = Math.max(3, cellSize * 0.12);
+        const startR = Math.max(6, cellSize * 0.22);
+        const currentR = Math.max(7, cellSize * 0.25);
+
+        setCircle(ui.startCircle, startIndex, startR);
+        setCircle(ui.currentCircle, currentIndex, currentR);
+
+        if (ui.stopsGroup) {
+          ui.stopsGroup.textContent = "";
+          for (const i of stops) {
+            const { x, y } = xyOf(level.width, i);
+            const cx = x * (cellSize + gap) + cellSize / 2;
+            const cy = y * (cellSize + gap) + cellSize / 2;
+            const c = document.createElementNS(svgNS, "circle");
+            c.setAttribute("cx", cx.toFixed(2));
+            c.setAttribute("cy", cy.toFixed(2));
+            c.setAttribute("r", String(dotR));
+            c.setAttribute("fill", "var(--stop)");
+            c.setAttribute("opacity", "0.85");
+            ui.stopsGroup.appendChild(c);
+          }
+        }
+      }
+
+      function render() {
+        computeCellSize();
+
+        ui.board.innerHTML = "";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.classList.add("path-layer");
+        svg.setAttribute("aria-hidden", "true");
+        const path = document.createElementNS(svgNS, "path");
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "var(--path)");
+        path.setAttribute("stroke-width", "5");
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("stroke-linejoin", "round");
+        path.setAttribute("opacity", "0.9");
+        path.setAttribute("filter", "drop-shadow(0 8px 18px rgba(0,0,0,0.55))");
+        svg.appendChild(path);
+
+        const stopsGroup = document.createElementNS(svgNS, "g");
+        svg.appendChild(stopsGroup);
+
+        const startCircle = document.createElementNS(svgNS, "circle");
+        startCircle.setAttribute("fill", "var(--start)");
+        startCircle.setAttribute("stroke", "#eafff533");
+        startCircle.setAttribute("stroke-width", "2");
+        startCircle.setAttribute("filter", "drop-shadow(0 10px 24px rgba(0,0,0,0.45))");
+        svg.appendChild(startCircle);
+
+        const currentCircle = document.createElementNS(svgNS, "circle");
+        currentCircle.setAttribute("fill", "var(--current)");
+        currentCircle.setAttribute("stroke", "#d8fbff55");
+        currentCircle.setAttribute("stroke-width", "2");
+        currentCircle.setAttribute("filter", "drop-shadow(0 10px 24px rgba(0,0,0,0.45))");
+        svg.appendChild(currentCircle);
+
+        ui.board.appendChild(svg);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        grid.setAttribute("role", "grid");
+        grid.setAttribute("aria-label", "Coil board grid");
+        grid.style.gridTemplateColumns = `repeat(${level.width}, var(--cell-size))`;
+        ui.board.appendChild(grid);
+        ui.grid = grid;
+        ui.pathSvg = svg;
+        ui.pathPath = path;
+        ui.stopsGroup = stopsGroup;
+        ui.startCircle = startCircle;
+        ui.currentCircle = currentCircle;
+
+        const frag = document.createDocumentFragment();
+
+        for (let y = 0; y < level.height; y++) {
+          for (let x = 0; x < level.width; x++) {
+            const i = idxOf(level.width, x, y);
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.setAttribute("role", "gridcell");
+            cell.dataset.index = String(i);
+            cell.title = `(${x},${y})`;
+
+            if (level.walls[i]) {
+              cell.classList.add("wall");
+            } else {
+              cell.classList.add("empty");
+            }
+
+            if (visited && visited[i]) cell.classList.add("visited");
+
+            frag.appendChild(cell);
+          }
+        }
+
+        ui.grid.appendChild(frag);
+        updatePathOverlay();
+        updateMeta();
+      }
+
+      function clearState() {
+        visited = new Uint8Array(level.width * level.height);
+        visitedCount = 0;
+        startIndex = null;
+        currentIndex = null;
+        stops = [];
+        segments = [];
+      }
+
+      function loadLevel(n) {
+        levelNumber = n;
+        level = parseLevel(LEVEL_STRINGS[n]);
+        clearState();
+        setStatus("neutral", "Click an empty cell to choose a starting position.");
+        render();
+      }
+
+      function setStart(index) {
+        if (level.walls[index]) return;
+        clearState();
+        startIndex = index;
+        currentIndex = index;
+        visited[index] = 1;
+        visitedCount = 1;
+        stops = [index];
+        setStatus("neutral", "Start set. Move with arrow keys, buttons, or by clicking along a row/column.");
+        render();
+      }
+
+      function clearStart() {
+        clearState();
+        setStatus("neutral", "Start cleared. Click an empty cell to choose a new starting position.");
+        render();
+      }
+
+      function isSolved() {
+        return startIndex != null && visitedCount === level.openCount;
+      }
+
+      function tryMove(dir) {
+        if (isSolved()) {
+          setStatus("good", "Solved! Pick a new level or reset to try again.");
+          render();
+          return;
+        }
+        if (startIndex == null || currentIndex == null) {
+          setStatus("bad", "Pick a starting position first.");
+          render();
+          return;
+        }
+
+        const { dx, dy } = DIRS[dir];
+        const { width, height, walls } = level;
+        let { x, y } = xyOf(width, currentIndex);
+
+        const stepCells = [];
+        while (true) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) break;
+          const ni = idxOf(width, nx, ny);
+          if (walls[ni]) break;
+          if (visited[ni]) break;
+          stepCells.push(ni);
+          x = nx;
+          y = ny;
+        }
+
+        if (stepCells.length === 0) {
+          setStatus("bad", "That direction is blocked.");
+          render();
+          return;
+        }
+
+        for (const i of stepCells) {
+          visited[i] = 1;
+        }
+        visitedCount += stepCells.length;
+        currentIndex = stepCells[stepCells.length - 1];
+        segments.push({ dir, cells: stepCells });
+        stops.push(currentIndex);
+
+        if (isSolved()) {
+          setStatus("good", "Solved! You visited every non-wall cell.");
+        } else if (!canMoveFrom(currentIndex)) {
+          setStatus("bad", "Dead end (no legal moves). Undo or reset.");
+        } else {
+          setStatus("neutral", "Moved. Keep going.");
+        }
+        render();
+      }
+
+      function undoOne() {
+        if (segments.length === 0) return;
+        const last = segments.pop();
+        for (const i of last.cells) visited[i] = 0;
+        visitedCount -= last.cells.length;
+        stops.pop();
+        currentIndex = stops[stops.length - 1] ?? startIndex;
+        setStatus("neutral", "Undid last move.");
+        render();
+      }
+
+      function undoToStop(targetIndex) {
+        const pos = stops.indexOf(targetIndex);
+        if (pos === -1) return;
+        while (currentIndex !== targetIndex && segments.length > 0) {
+          undoOne();
+        }
+      }
+
+      function directionFromClick(targetIndex) {
+        if (currentIndex == null) return null;
+        const a = xyOf(level.width, currentIndex);
+        const b = xyOf(level.width, targetIndex);
+        if (a.x === b.x && a.y !== b.y) return b.y < a.y ? "U" : "D";
+        if (a.y === b.y && a.x !== b.x) return b.x < a.x ? "L" : "R";
+        return null;
+      }
+
+      function handleBoardClick(ev) {
+        const cell = ev.target.closest(".cell");
+        if (!cell) return;
+        const index = Number(cell.dataset.index);
+        if (!Number.isFinite(index)) return;
+
+        if (level.walls[index]) return;
+
+        if (startIndex == null) {
+          setStart(index);
+          return;
+        }
+
+        if (segments.length === 0 && startIndex === index) {
+          clearStart();
+          return;
+        }
+
+        if (stops.includes(index)) {
+          if (index === currentIndex) {
+            undoOne();
+          } else {
+            undoToStop(index);
+          }
+          return;
+        }
+
+        const dir = directionFromClick(index);
+        if (!dir) {
+          setStatus("neutral", "Click in the same row/column as the current position to choose a direction.");
+          render();
+          return;
+        }
+        tryMove(dir);
+      }
+
+      function initLevelSelect() {
+        ui.levelSelect.innerHTML = "";
+        for (let i = 1; i <= 20; i++) {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = `Level ${i}`;
+          ui.levelSelect.appendChild(opt);
+        }
+        ui.levelSelect.value = "1";
+      }
+
+      ui.board.addEventListener("click", handleBoardClick);
+
+      ui.levelSelect.addEventListener("change", () => {
+        const n = Number(ui.levelSelect.value);
+        if (!Number.isFinite(n) || !(n in LEVEL_STRINGS)) return;
+        loadLevel(n);
+      });
+
+      ui.resetBtn.addEventListener("click", () => loadLevel(levelNumber));
+      ui.undoBtn.addEventListener("click", undoOne);
+
+      ui.upBtn.addEventListener("click", () => tryMove("U"));
+      ui.downBtn.addEventListener("click", () => tryMove("D"));
+      ui.leftBtn.addEventListener("click", () => tryMove("L"));
+      ui.rightBtn.addEventListener("click", () => tryMove("R"));
+
+      window.addEventListener("keydown", (ev) => {
+        const key = ev.key;
+        if (key === "ArrowUp") {
+          ev.preventDefault();
+          tryMove("U");
+        } else if (key === "ArrowDown") {
+          ev.preventDefault();
+          tryMove("D");
+        } else if (key === "ArrowLeft") {
+          ev.preventDefault();
+          tryMove("L");
+        } else if (key === "ArrowRight") {
+          ev.preventDefault();
+          tryMove("R");
+        } else if (key === "Backspace" || key === "u" || key === "U") {
+          ev.preventDefault();
+          undoOne();
+        } else if (key === "r" || key === "R") {
+          ev.preventDefault();
+          loadLevel(levelNumber);
+        }
+      });
+
+      initLevelSelect();
+      loadLevel(1);
+    </script>
+  </body>
+</html>
