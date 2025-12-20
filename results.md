@@ -24,3 +24,4 @@ Calling with "-p" means doing the non interactive mode with Claude Code.
 | Nov 24 2025 | Opus 4.5 iter | 600       | 47        | | 0.00855% | 650,000  |
 | Dec 5 2025 | Gemini 3 deepthink 1shot | 600       |  0       |  |  |  |
 | Dec 13 2025 | Gpt 5.2 | 600       | 171        | |  |    |
+| Dec 20 2025 | Gemini Flash 3 | 600       | 176        | |  |    |
