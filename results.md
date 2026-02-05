@@ -25,3 +25,4 @@ Calling with "-p" means doing the non interactive mode with Claude Code.
 | Dec 5 2025 | Gemini 3 deepthink 1shot | 600       |  0       |  |  |  |
 | Dec 13 2025 | Gpt 5.2 | 600       | 171        | |  |    |
 | Dec 20 2025 | Gemini Flash 3 | 600       | 176        | |  |    |
+| Feb 5 2025 | Gpt 5.2 codex | 600       | 176        | |  |    |
