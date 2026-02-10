@@ -25,7 +25,7 @@ if ! command -v openssl >/dev/null 2>&1; then
   exit 1
 fi
 
-curl -L "${DATA_URL}" -o "${archive_path}"
+curl -L "${DATA_URL}" -o "${archive_path}" < /dev/null
 
 echo "Extracting archive..."
 unzip -q "${archive_path}" -d "${extract_dir}"
