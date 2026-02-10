@@ -276,7 +276,7 @@
             exactly once.
           </div>
         </div>
-        <div class="small">Levels 1–20 are embedded (no network needed).</div>
+        <div class="small">Odd levels 1–19 are embedded (no network needed).</div>
       </header>
 
       <div class="row">
@@ -339,25 +339,15 @@
 
       const LEVEL_STRINGS = {
         1: "x=3&y=3&board=X.......X",
-        2: "x=4&y=3&board=X..........X",
         3: "x=5&y=3&board=......X......X.",
-        4: "x=4&y=4&board=..........X.X...",
         5: "x=5&y=4&board=........X..........X",
-        6: "x=6&y=4&board=...X...X........X...X...",
         7: "x=5&y=5&board=X......XX................",
-        8: "x=6&y=5&board=.....X.....X..X.......X.......",
         9: "x=7&y=5&board=...................X....X..........",
-        10: "x=6&y=6&board=...X...X.X............X..X..X.......",
         11: "x=7&y=6&board=.................XX..X..XX.....X......X...",
-        12: "x=8&y=6&board=............X..............X.........X....X..XXX",
         13: "x=7&y=7&board=.............X....X...XX.......X.......XX...X....",
-        14: "x=8&y=7&board=..............X............X...X.X.....X....X..X..X....X",
         15: "x=9&y=7&board=..........X........X...X....X.....XX.X..X..XX.X................",
-        16: "x=8&y=8&board=...........XX......X......XX......XX......XX......X.......X.....",
         17: "x=9&y=8&board=..........X.....X..X...X....X........X....XX..X.XX.....X................",
-        18: "x=10&y=8&board=XXX.......X...X.....X.........X....XX...X....X....X......X....X.................",
         19: "x=9&y=9&board=.......................XX...X........X..X.XX..XX.X.X...X......X...X..............",
-        20: "x=10&y=9&board=...X.........X....X...X...X.X.....X........X...X.X...X.....X.........X.........X.........X",
       };
 
       function parseLevel(levelString) {
@@ -797,13 +787,18 @@
 
       function initLevelSelect() {
         ui.levelSelect.innerHTML = "";
-        for (let i = 1; i <= 20; i++) {
+        const levelNumbers = Object.keys(LEVEL_STRINGS)
+          .map((n) => Number(n))
+          .filter((n) => Number.isFinite(n))
+          .sort((a, b) => a - b);
+
+        for (const i of levelNumbers) {
           const opt = document.createElement("option");
           opt.value = String(i);
           opt.textContent = `Level ${i}`;
           ui.levelSelect.appendChild(opt);
         }
-        ui.levelSelect.value = "1";
+        ui.levelSelect.value = String(levelNumbers[0]);
       }
 
       ui.board.addEventListener("click", handleBoardClick);
@@ -846,7 +841,7 @@
       });
 
       initLevelSelect();
-      loadLevel(1);
+      loadLevel(Number(ui.levelSelect.value));
     </script>
   </body>
 </html>

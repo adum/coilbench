@@ -55,19 +55,20 @@ The evaluation script (evaluate.py) can be used as follows:
 
 Where:
 - <solver_program> is the path to your solver program
+- evaluate.py reads odd/public levels from levels_public by default
 - --start N (optional) specifies the starting level number (default: 1)
 - --end M (optional) specifies the ending level number
 - --timeout T (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
 - --estimate (optional) estimates solving times for larger square levels (100x100 to 2000x2000) based on the collected timing data, showing predictions from multiple models
 
 Example:
-./evaluate.py ./my_solver --start 1 --end 3
+./evaluate.py ./my_solver --start 1 --end 5
 
 
-This will test your solver against levels 1, 2, and 3, and report the results with level dimensions:
+This will test your solver against odd levels 1, 3, and 5, and report the results with level dimensions:
 Level 1 (3x3): PASS (0.03s)
-Level 2 (4x3): PASS (0.03s)
 Level 3 (5x3): PASS (0.03s)
+Level 5 (5x4): PASS (0.03s)
 
 
 8. Visualization
@@ -82,7 +83,7 @@ Where:
 - --output OUTPUT_FILE (optional) specifies an output file to write to instead of stdout
 
 Example:
-./draw_level.py levels/1
+./draw_level.py levels_public/1
 
 
 This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
@@ -100,7 +101,7 @@ Where:
 The solver uses a simple backtracking algorithm to try all possible starting positions and movement sequences. It will output the first valid solution it finds in the format specified in section 5.
 
 Example:
-./coil_solver.py levels/1
+./coil_solver.py levels_public/1
 
 
 This will output a solution like:

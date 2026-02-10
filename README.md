@@ -5,8 +5,6 @@ Coil is a pathfinding puzzle game, where the objective is to traverse a grid-bas
 ## Example Levels
 
 <img src="images/level1.svg" alt="Level 1" width="150" height="150"/>
-<img src="images/level10.svg" alt="Level 10" width="180" height="180"/>
-<img src="images/level50.svg" alt="Level 50" width="400" height="380"/>
 
 ## 1. Input Format
 A game level consists of a rectangular grid of dimensions x×y (width × height). Each cell is either empty or a wall.
@@ -73,7 +71,7 @@ To test a solving program, we run a script that feeds the program with game leve
 
 The programs read the level on standard in, and return the solution on standard out.
 
-The evaluation script (evaluate.py) can be used as follows:
+The development evaluation script (`evaluate.py`) can be used as follows:
 
 ```
 ./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
@@ -81,6 +79,7 @@ The evaluation script (evaluate.py) can be used as follows:
 
 Where:
 - `<solver_program>` is the path to your solver program
+- by default this reads only odd/public levels from `levels_public/`
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
 - `--timeout T` (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
@@ -89,15 +88,24 @@ Where:
 
 Example:
 ```
-./evaluate.py ./my_solver --start 1 --end 3
+./evaluate.py ./my_solver --start 1 --end 5
 ```
 
-This will test your solver against levels 1, 2, and 3, and report the results with level dimensions:
+This will test your solver against odd levels 1, 3, and 5, and report the results with level dimensions:
 ```
 Level 1 (3x3): PASS (0.03s)
-Level 2 (4x3): PASS (0.03s)
 Level 3 (5x3): PASS (0.03s)
+Level 5 (5x4): PASS (0.03s)
 ```
+
+For user-gated full evaluation (odd + even), use:
+```
+./evaluate_full.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
+```
+This prompts for a password and decrypts even levels into a temporary directory for that run only.
+
+Both evaluation scripts append a simple row to `test.md`:
+`Date | Model/Solver | Timeout | Highest Passed | Mode | Command`.
 
 ## 8. Visualization
 
@@ -113,12 +121,12 @@ Where:
 
 Example:
 ```
-./draw_level.py levels/1
+./draw_level.py levels_public/1
 ```
 
 This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
 
-The SVG visualizations above were generated from levels 1, 10, and 50, showing the increasing complexity of puzzles. Dark squares represent walls while empty cells are shown in white.
+The SVG visualization above was generated from level 1. Dark squares represent walls while empty cells are shown in white.
 
 ## 9. Example Solver
 
@@ -135,7 +143,7 @@ The solver uses a simple backtracking algorithm to try all possible starting pos
 
 Example:
 ```
-./coil_solver.py levels/1
+./coil_solver.py levels_public/1
 ```
 
 This will output a solution like:
@@ -177,4 +185,12 @@ Some clever approaches are needed because the time estimate for the simple solve
 
 ## 12. Full board collection
 
-The first 100 levels, which are relatively small, are checked in to the repo under the `levels` directory. For the full collection of 1208 levels, download the zip from Releases.
+The repo keeps odd/public levels under `levels_public`.
+
+To install the full collection and produce an encrypted even-level archive locally, run:
+```
+./download_full_levels.sh
+```
+This creates:
+- `levels_public/` (odd levels, plaintext)
+- `levels_secret_even.tar.enc` (even levels, encrypted with your prompted password)

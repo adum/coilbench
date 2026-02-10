@@ -46,7 +46,7 @@ To test a solving program, we run a script that feeds the program with game leve
 
 The programs read the level on standard in, and return the solution on standard out.
 
-The evaluation script (evaluate.py) can be used as follows:
+The development evaluation script (evaluate.py) can be used as follows:
 
 ```
 ./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
@@ -54,6 +54,7 @@ The evaluation script (evaluate.py) can be used as follows:
 
 Where:
 - `<solver_program>` is the path to your solver program
+- by default this reads only odd/public levels from `levels_public/`
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
 - `--timeout T` (optional) specifies the maximum time in seconds allowed for solving a level (default: 60)
@@ -62,15 +63,24 @@ Where:
 
 Example:
 ```
-./evaluate.py ./my_solver --start 1 --end 3
+./evaluate.py ./my_solver --start 1 --end 5
 ```
 
-This will test your solver against levels 1, 2, and 3, and report the results with level dimensions:
+This will test your solver against odd levels 1, 3, and 5, and report the results with level dimensions:
 ```
 Level 1 (3x3): PASS (0.03s)
-Level 2 (4x3): PASS (0.03s)
 Level 3 (5x3): PASS (0.03s)
+Level 5 (5x4): PASS (0.03s)
 ```
+
+For user-gated full evaluation (odd + even), use:
+```
+./evaluate_full.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
+```
+This prompts for a password and decrypts even levels into a temporary directory for that run only.
+
+Both evaluation scripts append a simple row to `test.md`:
+`Date | Model/Solver | Timeout | Highest Passed | Mode | Command`.
 
 8. Visualization
 
@@ -86,7 +96,7 @@ Where:
 
 Example:
 ```
-./draw_level.py levels/1
+./draw_level.py levels_public/1
 ```
 
 This will display the level as a 2D grid with walls represented as █ and empty cells as dots.
@@ -106,7 +116,7 @@ The solver uses a simple backtracking algorithm to try all possible starting pos
 
 Example:
 ```
-./coil_solver.py levels/1
+./coil_solver.py levels_public/1
 ```
 
 This will output a solution like:
@@ -145,3 +155,17 @@ The top level to solve is approximately 2000 by 2000. A good solver will be able
 
 Some clever approaches are needed because the time estimate for the simple solver is:
 2000x2000: 304.41 millennia
+
+12. Full board collection
+
+The repo keeps odd/public levels under `levels_public`.
+
+To install the full collection and produce an encrypted even-level archive locally, run:
+
+```
+./download_full_levels.sh
+```
+
+This creates:
+- `levels_public/` (odd levels, plaintext)
+- `levels_secret_even.tar.enc` (even levels, encrypted with your prompted password)
