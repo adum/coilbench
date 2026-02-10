@@ -1,3 +1,19 @@
-your job is to write a program to solve all the coil levels up to the final, which is 2000 by 2000 large. this will require a series of very clever algorithms to solve all the coil levels up to the final, which is 2000 by 2000 large. this directory contains detailed information including a sample brute force solver and some debugging and verifying tools. the brute force program can't even solve boards close to 1% of the final size in reasonable time. the final solution must run in under an hour. you will need to try ideas, test, iterate, many times. make a long term plan that assumes this is going to be hard and there will be repeated continuations to work on this until it is solved. do not stop until you have tested a final solution that works for the hardest level. multiple humans have coded solutions that solve all levels.
-in the event you are not able to solve all levels up to the end, it's important to report how far you are able to get. before stopping work, after any significant improvement, run the evaluate script from level 1 to see how far you get and only report results where you test from the beginning, not cherry picked levels. Write the results into "test.md" as simple tabular data (date, solver/model, timeout, highest passed, mode, command).
-This codebase is intended as a benchmark suite. Therefore, it is important not to cheat, not to look for external solutions, not to cache solutions, or anything like that. 
+your job is to write a program to solve all the coil levels up to the final, which is 2000 by 2000 large. this will require a series of very clever algorithms, repeated experimentation, and many iterations.
+
+evaluation workflow:
+- before running evaluations for the first time, build the checker with `make -C coil_check`.
+- use `./evaluate.py <solver_program>` for normal development runs. this evaluates odd/public levels only (from `levels_public`).
+- use `./evaluate_full.py <solver_program>` only for user-gated full benchmark runs. this prompts for a password and evaluates both odd and even levels.
+- do not run `./evaluate_full.py` unless the user explicitly asks for a full benchmark run.
+- do not try to access or inspect even-level content directly. do not decrypt or expose hidden levels unless explicitly running the full evaluation command for a benchmark run.
+- do not modify benchmark assets or harness during solver iteration unless explicitly asked. this includes `levels_public`, `levels_secret_even.tar.enc`, `evaluate.py`, `evaluate_full.py`, and `coil_check/check.c`.
+
+reporting workflow:
+- after any significant improvement, run evaluation from the beginning (`--start 1`) and report that result only (no cherry-picked level ranges).
+- evaluation scripts automatically append simple tabular results to `test.md` with columns: date, solver/model, timeout, highest passed, mode, command.
+- keep `test.md` append-only from evaluator output (no manual edits to results rows).
+- if you discuss score/progress, cite runs that are in `test.md`.
+- include reproducibility parameters in any report summary: exact command used, timeout, and start/end range.
+- always include the first failing level and one concrete failure reason from checker output (or state complete pass for tested range).
+
+this codebase is intended as a benchmark suite. therefore, do not cheat, do not look for external solutions, do not cache level-specific answers, and do not hardcode solutions for specific levels.
