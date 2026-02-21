@@ -20,10 +20,13 @@ mkdir -p "${extract_dir}"
 mkdir -p "${odd_tmp_dir}"
 mkdir -p "${even_tmp_dir}"
 
-if ! command -v openssl >/dev/null 2>&1; then
-  echo "openssl is required but was not found in PATH." >&2
-  exit 1
-fi
+required_commands=(curl unzip tar openssl)
+for cmd in "${required_commands[@]}"; do
+  if ! command -v "${cmd}" >/dev/null 2>&1; then
+    echo "${cmd} is required but was not found in PATH." >&2
+    exit 1
+  fi
+done
 
 curl -L "${DATA_URL}" -o "${archive_path}" < /dev/null
 
