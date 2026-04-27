@@ -31,3 +31,4 @@ Calling with "-p" means doing the non interactive mode with Claude Code.
 | Apr 18 2026 | Opus 4.7 iter | 600       | 102        | |  |    |
 | Apr 21 2026 | Grok 4.2 | 600       | 47        | |  |    |
 | Apr 25 2026 | Gpt 5.5 | 600       | 163        | |  |  5,669,260  |
+| Apr 26 2026 | kimi 2.6 | 600       | 264        | |  |    |
