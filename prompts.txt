@@ -17,6 +17,7 @@ full evaluation workflow:
 - `./evaluate_full.py` always evaluates `./run_solver`.
 - `./evaluate_full.py` does not accept a solver path argument.
 - `./evaluate_full.py` prompts for the even-level archive password and evaluates odd plus even levels.
+- external benchmark runners may provide that password with `COIL_FULL_PASSWORD`.
 - do not run `./evaluate_full.py` unless the user or an external benchmark runner explicitly calls for a full benchmark run.
 - do not try to access, inspect, decrypt, print, or expose even-level contents directly.
 

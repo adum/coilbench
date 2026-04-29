@@ -104,7 +104,7 @@ For user-gated full evaluation (odd + even), use:
 ```
 ./evaluate_full.py [--start N] [--end M] [--timeout T] [--estimate] [--debug]
 ```
-This always evaluates `./run_solver`. It prompts for a password and decrypts even levels into a temporary directory for that run only.
+This always evaluates `./run_solver`. It prompts for a password and decrypts even levels into a temporary directory for that run only. Automated runners may provide the password with `COIL_FULL_PASSWORD`.
 
 Both evaluation scripts append a simple row to `test.md`:
 `Date | Model/Solver | Timeout | Highest Passed | Mode | Command`.

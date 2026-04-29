@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import shutil
+import os
 import subprocess
 import sys
 import tarfile
@@ -11,6 +12,7 @@ import evaluate
 
 DEFAULT_SECRET_ARCHIVE = Path("levels_secret_even.tar.enc")
 DEFAULT_PUBLIC_LEVELS_DIR = Path("levels_public")
+PASSWORD_ENV_VAR = "COIL_FULL_PASSWORD"
 
 
 def decrypt_secret_archive(secret_archive: Path, password: str, output_tar: Path) -> None:
@@ -78,7 +80,7 @@ def main() -> int:
         )
         return 1
 
-    password = getpass("Enter password for even levels: ")
+    password = os.environ.get(PASSWORD_ENV_VAR) or getpass("Enter password for even levels: ")
     if not password:
         print("Password cannot be empty.")
         return 1
