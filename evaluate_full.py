@@ -55,7 +55,8 @@ def main() -> int:
         return 1
 
     parser = evaluate.build_argument_parser(
-        "Evaluate a Coil solving program using odd public levels and encrypted even levels."
+        "Evaluate ./run_solver using odd public levels and encrypted even levels.",
+        include_solver=False,
     )
     parser.add_argument(
         "--public-levels-dir",

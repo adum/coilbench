@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ -x ./solver ]; then
+  exec ./solver
+fi
+
+if [ -f ./solver.py ]; then
+  exec python3 ./solver.py
+fi
+
+exec python3 ./coil_solver.py

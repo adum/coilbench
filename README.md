@@ -71,14 +71,16 @@ To test a solving program, we run a script that feeds the program with game leve
 
 The programs read the level on standard in, and return the solution on standard out.
 
+The default solver entrypoint is `./run_solver`. It runs `./solver.py` when present, otherwise it falls back to `./coil_solver.py`.
+
 The development evaluation script (`evaluate.py`) can be used as follows:
 
 ```
-./evaluate.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
+./evaluate.py [solver_program] [--start N] [--end M] [--timeout T] [--estimate] [--debug]
 ```
 
 Where:
-- `<solver_program>` is the path to your solver program
+- `solver_program` is optional and defaults to `./run_solver`
 - by default this reads only odd/public levels from `levels_public/`
 - `--start N` (optional) specifies the starting level number (default: 1)
 - `--end M` (optional) specifies the ending level number
@@ -88,7 +90,7 @@ Where:
 
 Example:
 ```
-./evaluate.py ./my_solver --start 1 --end 5
+./evaluate.py --start 1 --end 5
 ```
 
 This will test your solver against odd levels 1, 3, and 5, and report the results with level dimensions:
@@ -100,9 +102,9 @@ Level 5 (5x4): PASS (0.03s)
 
 For user-gated full evaluation (odd + even), use:
 ```
-./evaluate_full.py <solver_program> [--start N] [--end M] [--timeout T] [--estimate] [--debug]
+./evaluate_full.py [--start N] [--end M] [--timeout T] [--estimate] [--debug]
 ```
-This prompts for a password and decrypts even levels into a temporary directory for that run only.
+This always evaluates `./run_solver`. It prompts for a password and decrypts even levels into a temporary directory for that run only.
 
 Both evaluation scripts append a simple row to `test.md`:
 `Date | Model/Solver | Timeout | Highest Passed | Mode | Command`.

@@ -1,19 +1,51 @@
-your job is to write a program to solve all the coil levels up to the final, which is 2000 by 2000 large. this will require a series of very clever algorithms, repeated experimentation, and many iterations.
+your job is to write a program to solve all the coil levels up to the final, which is 2000 by 2000 large. this will require clever algorithms, repeated experimentation, and many iterations.
 
-evaluation workflow:
+solver contract:
+- the fixed solver entrypoint is `./run_solver`.
+- `./run_solver` runs `./solver.py` when present, otherwise it falls back to `./coil_solver.py`.
+- write or modify solver code behind that entrypoint.
+- do not require the evaluator or runner to pass a custom solver path.
+
+development evaluation workflow:
 - before running evaluations for the first time, build the checker with `make -C coil_check`.
-- use `./evaluate.py <solver_program>` for normal development runs. this evaluates odd/public levels only (from `levels_public`).
-- use `./evaluate_full.py <solver_program>` only for user-gated full benchmark runs. this prompts for a password and evaluates both odd and even levels.
-- do not run `./evaluate_full.py` unless the user explicitly asks for a full benchmark run.
-- do not try to access or inspect even-level content directly. do not decrypt or expose hidden levels unless explicitly running the full evaluation command for a benchmark run.
-- do not modify benchmark assets or harness during solver iteration unless explicitly asked. this includes `levels_public`, `levels_secret_even.tar.enc`, `evaluate.py`, `evaluate_full.py`, and `coil_check/check.c`.
+- use `./evaluate.py` for normal development runs. this evaluates odd/public levels only from `levels_public`.
+- `./evaluate.py` defaults to `./run_solver`.
+- run development evaluations from the beginning (`--start 1`) when measuring progress.
+- do not cherry-pick level ranges when reporting a score.
+
+full evaluation workflow:
+- `./evaluate_full.py` always evaluates `./run_solver`.
+- `./evaluate_full.py` does not accept a solver path argument.
+- `./evaluate_full.py` prompts for the even-level archive password and evaluates odd plus even levels.
+- do not run `./evaluate_full.py` unless the user or an external benchmark runner explicitly calls for a full benchmark run.
+- do not try to access, inspect, decrypt, print, or expose even-level contents directly.
+
+puzzle runner workflow:
+- this repo may be called by an external orchestrator named Puzzle Runner.
+- Puzzle Runner clones this repository into a fresh workspace.
+- Puzzle Runner may run `./download_full_levels.sh` and generate an ephemeral archive password automatically.
+- Puzzle Runner sends you this prompt, lets you work, then waits for you to return control.
+- when you return control, Puzzle Runner runs `./evaluate_full.py --timeout <seconds>` itself.
+- Puzzle Runner gives you score-only feedback: highest level passed, whether that improved, best score so far, and stale count.
+- Puzzle Runner does not give you private level contents or private failure traces.
+- continue improving the solver until Puzzle Runner stops the run for lack of progress or another configured stop condition.
+
+protected files:
+- do not modify benchmark assets or harness files unless explicitly asked.
+- protected files include `levels_public`, `levels_secret_even.tar.enc`, `evaluate.py`, `evaluate_full.py`, `download_full_levels.sh`, `coil_check/check.c`, and `coil_check/Makefile`.
+- modifying `run_solver` is allowed only to route to your solver implementation without changing the benchmark contract.
 
 reporting workflow:
-- after any significant improvement, run evaluation from the beginning (`--start 1`) and report that result only (no cherry-picked level ranges).
 - evaluation scripts automatically append simple tabular results to `test.md` with columns: date, solver/model, timeout, highest passed, mode, command.
-- keep `test.md` append-only from evaluator output (no manual edits to results rows).
-- if you discuss score/progress, cite runs that are in `test.md`.
-- include reproducibility parameters in any report summary: exact command used, timeout, and start/end range.
-- always include the first failing level and one concrete failure reason from checker output (or state complete pass for tested range).
+- keep `test.md` append-only from evaluator output. do not manually edit result rows.
+- if you discuss score or progress, cite runs that are in `test.md` or score feedback from Puzzle Runner.
+- include reproducibility parameters in summaries: exact command used, timeout, and start/end range.
+- include the first failing level and one concrete public/development failure reason when available.
+- for Puzzle Runner full-eval feedback, report only the score-only feedback it provided.
 
-this codebase is intended as a benchmark suite. therefore, do not cheat, do not look for external solutions, do not cache level-specific answers, and do not hardcode solutions for specific levels.
+benchmark integrity:
+- do not cheat.
+- do not look for external solutions.
+- do not cache level-specific answers.
+- do not hardcode solutions for specific levels.
+- do not use private-level feedback other than score-only progress reported by Puzzle Runner.

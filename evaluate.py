@@ -14,6 +14,7 @@ from typing import Iterable
 
 DEFAULT_PUBLIC_LEVELS_DIR = Path("levels_public")
 DEFAULT_RESULTS_PATH = Path("test.md")
+DEFAULT_SOLVER = "./run_solver"
 TEST_HEADER = [
     "| Date | Model/Solver | Timeout | Highest Passed | Mode | Command |",
     "| --- | --- | --- | --- | --- | --- |",
@@ -379,9 +380,17 @@ def run_evaluation(
     )
 
 
-def build_argument_parser(description: str) -> argparse.ArgumentParser:
+def build_argument_parser(description: str, *, include_solver: bool = True) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("solver", help="Path to the solver program")
+    if include_solver:
+        parser.add_argument(
+            "solver",
+            nargs="?",
+            default=DEFAULT_SOLVER,
+            help=f"Path to the solver program (default: {DEFAULT_SOLVER})",
+        )
+    else:
+        parser.set_defaults(solver=DEFAULT_SOLVER)
     parser.add_argument("--start", type=int, default=1, help="Starting level number")
     parser.add_argument("--end", type=int, default=None, help="Ending level number")
     parser.add_argument(
